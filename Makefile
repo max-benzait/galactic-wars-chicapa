@@ -1,5 +1,12 @@
 # Makefile - convenience commands for local dev & GCP deployment
 
+# Load environment variables from .env file if it exists
+ifneq (,$(wildcard .env))
+    include .env
+    export $(shell sed 's/=.*//' .env)
+endif
+
+# Default values (can be overridden by .env or CLI args)
 PROJECT_ID ?= your-gcp-project-id
 SERVICE_NAME ?= galactic-wars-poc
 REGION ?= us-central1
@@ -28,14 +35,14 @@ dev:
 	npm run dev
 
 build-docker:
-	docker build -t $(SERVICE_NAME) .
+	docker build --platform=linux/amd64 -t $(SERVICE_NAME) .
 
 run-docker:
 	docker run -p 8080:8080 --rm --name $(SERVICE_NAME) $(SERVICE_NAME)
 
 push:
 	gcloud auth configure-docker
-	docker build -t $(IMAGE) .
+	docker build --platform=linux/amd64 -t $(IMAGE) .
 	docker push $(IMAGE)
 
 deploy:
