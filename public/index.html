@@ -2,9 +2,12 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>Galactic Wars</title>
+  <title>Galactic Wars Lobby</title>
   <style>
-    body { font-family: sans-serif; margin: 1rem; }
+    body {
+      font-family: sans-serif;
+      margin: 1rem;
+    }
     #messages {
       margin-top: 1rem;
       border: 1px solid #aaa;
@@ -19,10 +22,19 @@
   </style>
 </head>
 <body>
-  <h1>Galactic Wars (POC)</h1>
+  <h1>Galactic Wars (Lobby Edition)</h1>
 
-  <p>Enter a command and press <strong>Send</strong>:</p>
-  <input type="text" id="commandInput" placeholder="e.g. joinGame Alice" />
+  <p>
+    <a href="/api/lobby/new" target="_blank">Create a New Lobby</a>
+    (this endpoint returns a JSON object with <code>lobbyId</code>).
+  </p>
+
+  <p>If you have a link like <code>/lobby/&lt;uuid&gt;</code>, open it in your browser.
+  The script will parse the UUID and connect to <code>ws://.../ws/lobby/&lt;uuid&gt;</code>.</p>
+
+  <div id="lobbyInfo"></div>
+
+  <input type="text" id="commandInput" placeholder="e.g. joinGame Alice">
   <button id="sendBtn">Send</button>
   <button id="helpBtn">Help</button>
 
