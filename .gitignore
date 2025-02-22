@@ -1,0 +1,107 @@
+# Node.js dependencies
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Environment files
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Binaries
+*.exe
+*.out
+*.app
+
+# Editor & OS files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+
+# Build artifacts
+dist/
+build/
+out/
+
+# Coverage reports
+coverage/
+.nyc_output/
+
+# Miscellaneous
+*.bak
+*.orig
+*.rej
+
+# TypeScript
+*.tsbuildinfo
+
+# Debugging
+*.log*
+logs/
+debug.log
+
+# Docker
+.dockerignore
+docker-compose.yml
+
+# PM2
+pm-debug.log*
+yarn-debug.log*
+pids/
+logs/
+
+# CI/CD
+.ci/
+.circleci/
+.github/
+.gitlab/
+
+# Secrets & Configs
+config/*.local.js
+config/*.local.json
+secrets.env
+
+# Jest
+jest.config.js
+jest.setup.js
+coverage/
+
+# Next.js
+.next/
+
+# SvelteKit
+.svelte-kit/
+
+# Prisma
+prisma/.dev.db
+
+# Storybook
+.storybook/
+storybook-static/
+
+# Temporary files
+*.tmp
+*.temp
+~*
+
+# MacOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Personal
+context.py
+context.txt

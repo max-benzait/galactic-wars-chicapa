@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Galactic Wars</title>
+  <style>
+    body { font-family: sans-serif; margin: 1rem; }
+    #messages {
+      margin-top: 1rem;
+      border: 1px solid #aaa;
+      height: 200px;
+      overflow-y: auto;
+      padding: 0.5rem;
+      background: #f9f9f9;
+    }
+    #commandInput {
+      width: 300px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Galactic Wars (POC)</h1>
+
+  <p>Enter a command and press <strong>Send</strong>:</p>
+  <input type="text" id="commandInput" placeholder="e.g. joinGame Alice" />
+  <button id="sendBtn">Send</button>
+  <button id="helpBtn">Help</button>
+
+  <div id="messages"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>

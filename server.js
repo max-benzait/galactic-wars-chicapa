@@ -1,27 +1,38 @@
-
 /*
-  server.js
-  ---------
-  Main entry point. Launches a WebSocket server on port 3000.
-  Clients can connect and send text commands. The server will parse commands,
-  call gameLogic, and broadcast results to all connected clients.
+  server.js (Express + WS)
+  ------------------------
+  - Serves the static "public/" folder via Express.
+  - Creates a WebSocket server on the same HTTP server.
+  - Integrates with the gameLogic.js to handle commands.
 */
 
-const WebSocket = require('ws');              // Using 'ws' library
-const { GameState } = require('./gameLogic'); // Our game logic module
+const path = require('path');
+const express = require('express');
+const http = require('http');
+const WebSocket = require('ws');
 
-// Create a single global game state for POC
+const { GameState } = require('./gameLogic');
+
+// Create global game instance
 const game = new GameState();
 
-// Keep track of connected clients for broadcasting
-const clients = [];
+// Create Express app & HTTP server
+const app = express();
+const server = http.createServer(app);
 
-const PORT = 3000;
+// Serve static files from "public/"
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Create WebSocket server
-const wss = new WebSocket.Server({ port: PORT }, () => {
-  console.log(`Galactic Wars server running on ws://localhost:${PORT}`);
+// Fallback: just serve index.html if needed
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
+
+// Create WebSocket server attached to the same HTTP server
+const wss = new WebSocket.Server({ server });
+
+// Keep track of connected clients
+const clients = [];
 
 // Broadcast helper
 function broadcast(message) {
@@ -32,38 +43,38 @@ function broadcast(message) {
   });
 }
 
-// On connection
+// On each new WebSocket connection
 wss.on('connection', (ws) => {
   clients.push(ws);
 
-  // Send a welcome message
+  // Greet the new connection
   ws.send(JSON.stringify({
     broadcast: false,
     message: 'Welcome to Galactic Wars! Type "help" for command info.'
   }));
 
-  // Handle incoming messages
   ws.on('message', (data) => {
     const text = data.toString().trim();
     if (!text) return;
 
-    // For simple POC, parse commands by splitting
+    // Naive parse: split by space
     const [cmd, ...args] = text.split(' ');
 
-    let response;
+    let result;
 
     switch (cmd.toLowerCase()) {
       case 'help':
-        response = `
-Available Commands:
-- joinGame <playerName>
-- startGame
-- move <shipId> <x> <y>
-- attack <shipId> <targetShipId>
-- build <shipType>
-- endTurn
-        `;
-        ws.send(JSON.stringify({ broadcast: false, message: response }));
+        ws.send(JSON.stringify({
+          broadcast: false,
+          message: `
+Commands:
+  joinGame <playerName>
+  startGame
+  move <shipId> <x> <y>
+  attack <shipId> <targetShipId>
+  build <shipType>
+  endTurn
+`       }));
         break;
 
       case 'joingame': {
@@ -72,7 +83,7 @@ Available Commands:
           ws.send(JSON.stringify({ error: 'Usage: joinGame <playerName>' }));
           return;
         }
-        const result = game.createPlayer(playerName);
+        result = game.createPlayer(playerName);
         if (result.error) {
           ws.send(JSON.stringify(result));
         } else {
@@ -82,7 +93,7 @@ Available Commands:
       }
 
       case 'startgame': {
-        const result = game.startGame();
+        result = game.startGame();
         if (result.error) {
           ws.send(JSON.stringify(result));
         } else {
@@ -97,7 +108,7 @@ Available Commands:
           return;
         }
         const [shipId, x, y] = args.map(a => Number(a));
-        const result = game.moveShip(shipId, x, y);
+        result = game.moveShip(shipId, x, y);
         if (result.error) {
           ws.send(JSON.stringify(result));
         } else {
@@ -112,7 +123,7 @@ Available Commands:
           return;
         }
         const [shipId, targetId] = args.map(a => Number(a));
-        const result = game.attackShip(shipId, targetId);
+        result = game.attackShip(shipId, targetId);
         if (result.error) {
           ws.send(JSON.stringify(result));
         } else {
@@ -127,7 +138,7 @@ Available Commands:
           return;
         }
         const shipType = args[0];
-        const result = game.buildShip(shipType);
+        result = game.buildShip(shipType);
         if (result.error) {
           ws.send(JSON.stringify(result));
         } else {
@@ -137,7 +148,7 @@ Available Commands:
       }
 
       case 'endturn': {
-        const result = game.endTurn();
+        result = game.endTurn();
         if (result.error) {
           ws.send(JSON.stringify(result));
         } else {
@@ -159,4 +170,10 @@ Available Commands:
       clients.splice(idx, 1);
     }
   });
+});
+
+// Start listening
+const PORT = process.env.PORT || 8080;
+server.listen(PORT, () => {
+  console.log(`Galactic Wars server running on http://localhost:${PORT}`);
 });
