@@ -3,6 +3,7 @@
   ------------------
   - POST /api/lobby/new => create new lobby, return JSON { lobbyId }
   - POST /api/lobby/:lobbyId/join => join a lobby by name (HTTP-based approach)
+  - GET /api/lobby/list => returns an array of active lobby IDs
 */
 
 const express = require('express');
@@ -12,13 +13,9 @@ const { getLobby, lobbies } = require('../serverState');
 
 const router = express.Router();
 
-/*
-  Create a new lobby. 
-  The actual lobby storage is in serverState.js (in-memory).
-*/
+// Create new
 router.post('/new', (req, res) => {
   const lobbyId = uuidv4();
-  // In serverState, we store { [lobbyId]: { game, clients } }
   lobbies[lobbyId] = {
     game: createGameState(),
     clients: new Set(),
@@ -27,12 +24,7 @@ router.post('/new', (req, res) => {
   return res.json({ lobbyId });
 });
 
-/*
-  Join a lobby by name (HTTP-based).
-  You can do:
-    POST /api/lobby/1234/join
-    body JSON => { "playerName": "Alice" }
-*/
+// Join
 router.post('/:lobbyId/join', express.json(), (req, res) => {
   const { lobbyId } = req.params;
   const { playerName } = req.body;
@@ -47,14 +39,35 @@ router.post('/:lobbyId/join', express.json(), (req, res) => {
   if (result.error) {
     return res.status(400).json(result);
   }
-  // For demonstration, we also broadcast to the WebSocket clients (if any)
-  for (const ws of lobby.clients) {
-    if (ws.readyState === 1) {
-      ws.send(JSON.stringify({ broadcast: true, message: `Player ${playerName} joined (via HTTP).` }));
+  // broadcast
+  for (const wsClient of lobby.clients) {
+    if (wsClient.readyState === 1) {
+      wsClient.send(JSON.stringify({ broadcast: true, message: `Player ${playerName} joined (via HTTP).` }));
     }
   }
-
   return res.json({ ok: true, message: `Joined lobby ${lobbyId} as ${playerName}` });
 });
 
+// List
+router.get('/list', (req, res) => {
+  const activeLobbies = Object.keys(lobbies); // array of lobby IDs
+  return res.json({ lobbies: activeLobbies });
+});
+
+// gameState
+router.get('/:lobbyId/state', (req, res) => {
+    const { lobbyId } = req.params;
+    const lobby = getLobby(lobbyId);
+    if (!lobby) {
+      return res.status(404).json({ error: 'Lobby not found' });
+    }
+    // Return a minimal subset of the game
+    const game = lobby.game;
+    res.json({
+      players: game.players,
+      resourceMap: game.resourceMap,
+      currentPlayerIndex: game.currentPlayerIndex,
+      gameStarted: game.gameStarted,
+    });
+  });
 module.exports = router;
