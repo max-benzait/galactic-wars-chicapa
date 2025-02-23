@@ -19,23 +19,16 @@ const apiRouter = require('./api');
 const { getLobby, lobbies } = require('./serverState');
 const { pushScore } = require('./scoreboard');
 
-/*
-  We'll detect "game end" if only one player remains alive 
-  or if current player's action kills the last opponent, etc.
-  We'll do that inside the handleMessage logic if needed.
-*/
-
-// Create app + server
 const app = express();
 const server = http.createServer(app);
 
 // Attach our /api routes
 app.use('/api', apiRouter);
 
-// Serve static files
+// Serve static files (React app, tutorial, etc.)
 app.use(express.static(path.join(__dirname, 'public')));
 
-// A fallback to serve index.html for anything else
+// Fallback: serve index.html for anything else (SPA approach)
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
@@ -43,7 +36,6 @@ app.get('*', (req, res) => {
 // WebSocket server
 const wss = new WebSocket.Server({ noServer: true });
 
-// parseCommand helper
 function parseCommand(text) {
   const trimmed = text.trim();
   if (!trimmed) return null;
@@ -51,13 +43,12 @@ function parseCommand(text) {
   return { cmd: cmd.toLowerCase(), args };
 }
 
-// broadcast helper
 function broadcastToLobby(lobbyId, message) {
   const lobby = getLobby(lobbyId);
   if (!lobby) return;
-  for (const ws of lobby.clients) {
-    if (ws.readyState === WebSocket.OPEN) {
-      ws.send(JSON.stringify({ broadcast: true, message }));
+  for (const wsClient of lobby.clients) {
+    if (wsClient.readyState === WebSocket.OPEN) {
+      wsClient.send(JSON.stringify({ broadcast: true, message }));
     }
   }
 }
@@ -67,7 +58,7 @@ function maybeCheckGameEnd(lobbyId) {
   const lobby = getLobby(lobbyId);
   if (!lobby) return;
   const { game } = lobby;
-  if (!game.gameStarted) return; // not started
+  if (!game.gameStarted) return;
 
   // Count alive players
   const aliveCount = game.players.filter(p => p.alive).length;
@@ -79,13 +70,10 @@ function maybeCheckGameEnd(lobbyId) {
 
     // Record in scoreboard
     pushScore(lobbyId, winnerName);
-    // Optionally, mark game as "done" so no further moves, up to you
     game.gameStarted = false; 
-    // etc.
   }
 }
 
-// Handle a single WS message for a lobby
 function handleWSMessage(ws, lobbyId, dataStr) {
   const lobby = getLobby(lobbyId);
   if (!lobby) return;
@@ -132,7 +120,7 @@ function handleWSMessage(ws, lobbyId, dataStr) {
         ws.send(JSON.stringify({ error: 'Usage: move <shipId> <x> <y>' }));
         return;
       }
-      const [shipId, x, y] = parsed.args.map(n => Number(n));
+      const [shipId, x, y] = parsed.args.map(Number);
       result = game.moveShip(shipId, x, y);
       if (result.error) {
         ws.send(JSON.stringify(result));
@@ -147,13 +135,12 @@ function handleWSMessage(ws, lobbyId, dataStr) {
         ws.send(JSON.stringify({ error: 'Usage: attack <shipId> <targetShipId>' }));
         return;
       }
-      const [shipId, targetId] = parsed.args.map(n => Number(n));
+      const [shipId, targetId] = parsed.args.map(Number);
       result = game.attackShip(shipId, targetId);
       if (result.error) {
         ws.send(JSON.stringify(result));
       } else {
         broadcastToLobby(lobbyId, result.message);
-        // Check if that ended the game
         maybeCheckGameEnd(lobbyId);
       }
       break;
@@ -180,7 +167,6 @@ function handleWSMessage(ws, lobbyId, dataStr) {
         ws.send(JSON.stringify(result));
       } else {
         broadcastToLobby(lobbyId, result.message);
-        // Possibly check game end if your rules say so
       }
       break;
 
@@ -204,19 +190,19 @@ server.on('upgrade', (req, socket, head) => {
     }
 
     const wssConn = new WebSocket.Server({ noServer: true });
-    wssConn.handleUpgrade(req, socket, head, (ws) => {
+    wssConn.handleUpgrade(req, socket, head, (wsClient) => {
       // add to lobby
-      lobby.clients.add(ws);
+      lobby.clients.add(wsClient);
 
       // handle messages
-      ws.on('message', (data) => handleWSMessage(ws, lobbyId, data.toString()));
+      wsClient.on('message', (data) => handleWSMessage(wsClient, lobbyId, data.toString()));
 
       // on close
-      ws.on('close', () => {
-        lobby.clients.delete(ws);
+      wsClient.on('close', () => {
+        lobby.clients.delete(wsClient);
       });
 
-      ws.send(JSON.stringify({
+      wsClient.send(JSON.stringify({
         broadcast: false,
         message: `Joined lobby ${lobbyId}! Type "help" for commands.`
       }));

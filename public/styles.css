@@ -1,0 +1,53 @@
+/* styles.css */
+
+/* Basic 20x20 board layout using a simple grid or table approach. 
+   Each cell (square) is 30px or so, to show a "board" appearance. */
+   .board-container {
+    display: inline-block;
+    margin: 1rem 0;
+    border: 2px solid #ccc;
+    user-select: none;
+  }
+  
+  .board-row {
+    display: flex;
+  }
+  
+  .board-cell {
+    width: 30px;
+    height: 30px;
+    background-color: #f0f0f0;  /* base grey */
+    border: 1px solid #999;
+    position: relative;
+    text-align: center;
+    font-size: 14px;
+    line-height: 30px;
+    cursor: pointer;
+  }
+  
+  .board-cell:hover {
+    background-color: #e5e5e5;
+  }
+  
+  .board-cell.ship {
+    background-color: #ffc107; /* yellow-ish for ships */
+  }
+  
+  .board-cell.resource {
+    background-color: #8fd18f; /* green-ish for resources */
+  }
+  
+  .board-cell.multiple-ships {
+    background-color: #dc3545; /* red to indicate conflict or multiple ships */
+    color: #fff;
+  }
+  
+  .board-cell span.cell-text {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0; top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }

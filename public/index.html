@@ -1,45 +1,41 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Galactic Wars Lobby</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      margin: 1rem;
-    }
-    #messages {
-      margin-top: 1rem;
-      border: 1px solid #aaa;
-      height: 200px;
-      overflow-y: auto;
-      padding: 0.5rem;
-      background: #f9f9f9;
-    }
-    #commandInput {
-      width: 300px;
-    }
-  </style>
+  <title>Galactic Wars - React UI</title>
+
+  <!-- Bootstrap CSS (from CDN) -->
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    integrity="sha384-ENjdO4Dr2bkBIFxQpeZCEz6KEiKpVST+zT2BdlZrZxT+5F04WoUJbfJqZDiYDtq7"
+    crossorigin="anonymous"
+  />
+
+  <!-- Our own stylesheet -->
+  <link rel="stylesheet" href="/styles.css" />
 </head>
-<body>
-  <h1>Galactic Wars (Lobby Edition)</h1>
+<body class="bg-light">
+  <div id="root"></div>
 
-  <p>
-    <a href="/api/lobby/new" target="_blank">Create a New Lobby</a>
-    (this endpoint returns a JSON object with <code>lobbyId</code>).
-  </p>
+  <!-- React + ReactDOM from CDN (development mode) -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/react@18/umd/react.development.js"
+    crossorigin
+  ></script>
+  <script
+    src="https://cdn.jsdelivr.net/npm/react-dom@18/umd/react-dom.development.js"
+    crossorigin
+  ></script>
 
-  <p>If you have a link like <code>/lobby/&lt;uuid&gt;</code>, open it in your browser.
-  The script will parse the UUID and connect to <code>ws://.../ws/lobby/&lt;uuid&gt;</code>.</p>
+  <!-- Our React code (bundled or separate) -->
+  <script type="module" src="/js/main.js"></script>
 
-  <div id="lobbyInfo"></div>
-
-  <input type="text" id="commandInput" placeholder="e.g. joinGame Alice">
-  <button id="sendBtn">Send</button>
-  <button id="helpBtn">Help</button>
-
-  <div id="messages"></div>
-
-  <script src="script.js"></script>
+  <!-- Bootstrap JS Bundle (optional) -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+YBf0J0MG1OOcZi/9BfSzex+7i6mZ"
+    crossorigin="anonymous"
+  ></script>
 </body>
 </html>
